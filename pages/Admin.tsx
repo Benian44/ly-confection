@@ -5,7 +5,9 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { Plus, Package, DollarSign, ShoppingCart, LogOut, Phone } from 'lucide-react';
 
 const Admin: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('admin_auth') === 'true';
+  });
   const [password, setPassword] = useState('');
   const [view, setView] = useState<'dashboard' | 'orders' | 'products'>('dashboard');
   const [loading, setLoading] = useState(false);
@@ -28,11 +30,23 @@ const Admin: React.FC = () => {
     // Simple hardcoded check for demo. In production, use Supabase Auth.
     if (password === 'admin123') {
       setIsAuthenticated(true);
+      localStorage.setItem('admin_auth', 'true');
       loadData();
     } else {
       alert("Mot de passe incorrect (Essayez 'admin123')");
     }
   };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('admin_auth');
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated]);
 
   const loadData = async () => {
     setLoading(true);
@@ -98,7 +112,7 @@ const Admin: React.FC = () => {
     <div className="pb-24 pt-4 px-4 max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Administration</h1>
-        <button onClick={() => setIsAuthenticated(false)} className="text-red-500 hover:bg-red-50 p-2 rounded-full">
+        <button onClick={handleLogout} className="text-red-500 hover:bg-red-50 p-2 rounded-full">
           <LogOut size={20} />
         </button>
       </div>
@@ -167,7 +181,7 @@ const Admin: React.FC = () => {
             <div key={order.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-gray-900">CMD #{order.id}</span>
+                  <span className="font-bold text-gray-900">CMD #{order.id.slice(0, 8)}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     order.status === 'delivered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                   }`}>
