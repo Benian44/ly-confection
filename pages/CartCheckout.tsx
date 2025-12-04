@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Trash2, MapPin, Phone, Truck, CheckCircle } from 'lucide-react';
 import { api } from '../services/supabase';
@@ -15,21 +15,31 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
 
   // Form State
   const [phone, setPhone] = useState('');
-  const [cityType, setCityType] = useState<'Abidjan' | 'Hors Abidjan'>('Abidjan');
+  const [deliveryZone, setDeliveryZone] = useState<'Abidjan' | 'Hors Abidjan'>('Abidjan');
+  const [city, setCity] = useState('Abidjan');
   const [address, setAddress] = useState('');
 
-  const deliveryFee = cityType === 'Abidjan' ? DELIVERY_FEES.abidjan : DELIVERY_FEES.outside;
+  const deliveryFee = deliveryZone === 'Abidjan' ? DELIVERY_FEES.abidjan : DELIVERY_FEES.outside;
   const totalWithDelivery = cartTotal + deliveryFee;
+
+  // Update city when zone changes
+  useEffect(() => {
+    if (deliveryZone === 'Abidjan') {
+      setCity('Abidjan');
+    } else {
+      setCity('');
+    }
+  }, [deliveryZone]);
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone || !address) return;
+    if (!phone || !address || !city) return;
 
     setLoading(true);
     try {
       await api.createOrder({
         customer_phone: phone,
-        customer_city: cityType,
+        customer_city: city, // Use the explicit city value
         customer_address: address,
         total_amount: totalWithDelivery,
         delivery_fee: deliveryFee,
@@ -38,6 +48,7 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
       clearCart();
       setStep('success');
     } catch (err) {
+      console.error(err);
       alert("Une erreur est survenue lors de la commande.");
     } finally {
       setLoading(false);
@@ -46,7 +57,7 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
 
   if (step === 'success') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center animate-fade-in">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
           <CheckCircle className="text-green-600" size={40} />
         </div>
@@ -85,13 +96,13 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
   if (step === 'checkout') {
     return (
       <div className="pb-24 pt-4 px-4 max-w-lg mx-auto">
-        <button onClick={() => setStep('cart')} className="text-gray-500 text-sm mb-4 hover:text-gray-800">
+        <button onClick={() => setStep('cart')} className="text-gray-500 text-sm mb-4 hover:text-gray-800 flex items-center gap-1">
           ← Retour au panier
         </button>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Finaliser la commande</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Livraison</h2>
         
         <form onSubmit={handleCheckout} className="space-y-6">
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-4">
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Numéro de téléphone</label>
               <div className="relative">
@@ -102,32 +113,32 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="07 07 07 07 07"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ville de livraison</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Zone de livraison</label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => setCityType('Abidjan')}
-                  className={`py-3 px-2 rounded-lg text-sm font-medium border ${
-                    cityType === 'Abidjan'
-                      ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                      : 'bg-white border-gray-200 text-gray-600'
+                  onClick={() => setDeliveryZone('Abidjan')}
+                  className={`py-3 px-2 rounded-lg text-sm font-medium border transition-all ${
+                    deliveryZone === 'Abidjan'
+                      ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm'
+                      : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
                   Abidjan (1500F)
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCityType('Hors Abidjan')}
-                  className={`py-3 px-2 rounded-lg text-sm font-medium border ${
-                    cityType === 'Hors Abidjan'
-                      ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                      : 'bg-white border-gray-200 text-gray-600'
+                  onClick={() => setDeliveryZone('Hors Abidjan')}
+                  className={`py-3 px-2 rounded-lg text-sm font-medium border transition-all ${
+                    deliveryZone === 'Hors Abidjan'
+                      ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm'
+                      : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
                   Intérieur (2000F)
@@ -135,8 +146,24 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
               </div>
             </div>
 
+            {deliveryZone === 'Hors Abidjan' && (
+              <div className="animate-fade-in">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ville</label>
+                <input
+                  type="text"
+                  required
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Entrez votre ville..."
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Adresse / Commune / Quartier</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {deliveryZone === 'Abidjan' ? 'Commune / Quartier / Repère' : 'Adresse de livraison / Quartier'}
+              </label>
               <textarea
                 required
                 value={address}
@@ -148,14 +175,14 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+          <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-3">Récapitulatif</h3>
             <div className="flex justify-between text-sm text-gray-600 mb-2">
               <span>Sous-total</span>
               <span>{cartTotal.toLocaleString()} FCFA</span>
             </div>
             <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Livraison ({cityType})</span>
+              <span>Livraison ({deliveryZone})</span>
               <span>{deliveryFee.toLocaleString()} FCFA</span>
             </div>
             <div className="border-t border-gray-300 my-2 pt-2 flex justify-between font-bold text-gray-900 text-lg">
@@ -170,9 +197,9 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-gray-800 disabled:bg-gray-400 transition-colors"
+            className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
           >
-            {loading ? 'Traitement...' : 'Confirmer la commande'}
+            {loading ? 'Traitement en cours...' : 'Confirmer la commande'}
           </button>
         </form>
       </div>

@@ -16,7 +16,7 @@ export interface Order {
   id: string;
   customer_name?: string; // Optional if we just want phone
   customer_phone: string;
-  customer_city: 'Abidjan' | 'Hors Abidjan';
+  customer_city: string;
   customer_address: string;
   total_amount: number;
   delivery_fee: number;
