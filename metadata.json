@@ -1,0 +1,5 @@
+{
+  "name": "MenStyle CI",
+  "description": "Une application e-commerce mobile-first pour vêtements hommes avec gestion de commande sans inscription, calcul de frais de livraison dynamique (Abidjan/Intérieur) et interface d'administration pour la gestion des produits et les statistiques.",
+  "requestFramePermissions": []
+}
