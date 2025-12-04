@@ -23,6 +23,8 @@ const Admin: React.FC = () => {
     price: '',
     category: 'Chemises',
     image_url: 'https://picsum.photos/400/500',
+    available_sizes: 'S, M, L, XL, XXL',
+    available_colors: 'Noir, Blanc, Bleu, Gris'
   });
 
   const handleLogin = (e: React.FormEvent) => {
@@ -76,12 +78,22 @@ const Admin: React.FC = () => {
         name: newProduct.name,
         price: parseInt(newProduct.price),
         category: newProduct.category,
-        image_url: newProduct.image_url
+        image_url: newProduct.image_url,
+        available_sizes: newProduct.available_sizes.split(',').map(s => s.trim()).filter(s => s),
+        available_colors: newProduct.available_colors.split(',').map(s => s.trim()).filter(s => s),
       });
-      setNewProduct({ name: '', price: '', category: 'Chemises', image_url: 'https://picsum.photos/400/500' });
+      setNewProduct({ 
+        name: '', 
+        price: '', 
+        category: 'Chemises', 
+        image_url: 'https://picsum.photos/400/500',
+        available_sizes: 'S, M, L, XL, XXL',
+        available_colors: 'Noir, Blanc, Bleu, Gris'
+      });
       alert('Produit ajouté !');
       loadData(); // Reload
     } catch (e) {
+      console.error(e);
       alert('Erreur ajout produit');
     } finally {
       setLoading(false);
@@ -191,7 +203,7 @@ const Admin: React.FC = () => {
                 <p className="text-sm text-gray-600 flex items-center gap-1"><Phone size={14}/> {order.customer_phone}</p>
                 <p className="text-sm text-gray-600">{order.customer_city} - {order.customer_address}</p>
                 <div className="mt-2 text-xs text-gray-500">
-                  {order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}
+                  {order.items.map(i => `${i.quantity}x ${i.name} (${i.selectedSize}, ${i.selectedColor})`).join(', ')}
                 </div>
               </div>
               <div className="flex flex-col items-end justify-center">
@@ -245,7 +257,31 @@ const Admin: React.FC = () => {
                 onChange={e => setNewProduct({...newProduct, image_url: e.target.value})}
                 className="p-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500"
               />
-              <button type="submit" disabled={loading} className="md:col-span-2 bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-gray-800">
+              
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                   <label className="text-xs text-gray-500 ml-1 mb-1 block">Tailles (séparées par des virgules)</label>
+                   <input
+                    type="text"
+                    placeholder="S, M, L, XL"
+                    value={newProduct.available_sizes}
+                    onChange={e => setNewProduct({...newProduct, available_sizes: e.target.value})}
+                    className="w-full p-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                   <label className="text-xs text-gray-500 ml-1 mb-1 block">Couleurs (séparées par des virgules)</label>
+                   <input
+                    type="text"
+                    placeholder="Noir, Blanc, Rouge"
+                    value={newProduct.available_colors}
+                    onChange={e => setNewProduct({...newProduct, available_colors: e.target.value})}
+                    className="w-full p-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <button type="submit" disabled={loading} className="md:col-span-2 bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-gray-800 mt-2">
                 {loading ? 'Ajout...' : 'Ajouter le produit'}
               </button>
             </form>
@@ -258,6 +294,9 @@ const Admin: React.FC = () => {
                  <div className="overflow-hidden">
                    <p className="font-medium text-sm truncate">{p.name}</p>
                    <p className="text-xs text-gray-500">{p.price} F</p>
+                   <p className="text-[10px] text-gray-400 truncate">
+                      {p.available_sizes?.join(', ')} | {p.available_colors?.join(', ')}
+                   </p>
                  </div>
                </div>
              ))}

@@ -211,23 +211,39 @@ const CartCheckout: React.FC<{ goHome: () => void }> = ({ goHome }) => {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Mon Panier ({cart.length})</h1>
       <div className="space-y-4">
         {cart.map((item) => (
-          <div key={`${item.id}-${item.size}`} className="flex gap-4 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+          <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex gap-4 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
             <div className="w-20 h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
               <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col flex-grow justify-between">
               <div>
                 <h3 className="font-medium text-gray-900 line-clamp-1">{item.name}</h3>
-                <p className="text-sm text-gray-500">Taille: {item.size}</p>
-                <p className="text-sm font-semibold text-indigo-600">{item.price.toLocaleString()} FCFA</p>
+                <div className="flex flex-wrap gap-2 mt-1">
+                   <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600 border border-gray-200">
+                     {item.selectedSize}
+                   </span>
+                   <span className="text-xs bg-indigo-50 px-2 py-0.5 rounded text-indigo-700 border border-indigo-100">
+                     {item.selectedColor}
+                   </span>
+                </div>
+                <p className="text-sm font-semibold text-indigo-600 mt-1">{item.price.toLocaleString()} FCFA</p>
               </div>
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-2 py-1">
-                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-gray-500 text-lg font-bold px-1">-</button>
+                  <button 
+                    onClick={() => updateQuantity(item.id, item.selectedSize, item.selectedColor, item.quantity - 1)} 
+                    className="text-gray-500 text-lg font-bold px-1"
+                  >-</button>
                   <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-gray-500 text-lg font-bold px-1">+</button>
+                  <button 
+                    onClick={() => updateQuantity(item.id, item.selectedSize, item.selectedColor, item.quantity + 1)} 
+                    className="text-gray-500 text-lg font-bold px-1"
+                  >+</button>
                 </div>
-                <button onClick={() => removeFromCart(item.id)} className="text-red-400 p-2 hover:bg-red-50 rounded-full">
+                <button 
+                  onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)} 
+                  className="text-red-400 p-2 hover:bg-red-50 rounded-full"
+                >
                   <Trash2 size={18} />
                 </button>
               </div>

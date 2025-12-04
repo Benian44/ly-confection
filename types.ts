@@ -4,12 +4,15 @@ export interface Product {
   price: number;
   category: string;
   image_url: string;
+  available_sizes: string[];
+  available_colors: string[];
   created_at?: string;
 }
 
 export interface CartItem extends Product {
   quantity: number;
-  size?: string;
+  selectedSize: string;
+  selectedColor: string;
 }
 
 export interface Order {
